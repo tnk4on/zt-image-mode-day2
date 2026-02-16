@@ -1,0 +1,16 @@
+<aside class="page-nav" role="navigation">
+    <div class="page-nav-inner">
+        {{#with page.previous}}
+        <a class="page-nav-btn prev" href="{{{url}}}">
+            <span class="page-nav-label">前へ</span>
+            <span class="page-nav-title">{{content}}</span>
+        </a>
+        {{/with}}
+        {{#with page.next}}
+        <a class="page-nav-btn next" href="{{{url}}}">
+            <span class="page-nav-label">次へ</span>
+            <span class="page-nav-title">{{content}}</span>
+        </a>
+        {{/with}}
+    </div>
+</aside>

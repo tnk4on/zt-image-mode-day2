@@ -1,0 +1,15 @@
+<nav class="nav" aria-label="Navigation">
+    {{#each site.components}}
+    <ul class="nav-list">
+        {{#each versions}}
+        {{#each navigation}}
+        {{#each items}}
+        <li class="nav-item{{#if (eq url ../../../../page.url)}} is-current-page{{/if}}">
+            <a class="nav-link" href="{{{url}}}">{{content}}</a>
+        </li>
+        {{/each}}
+        {{/each}}
+        {{/each}}
+    </ul>
+    {{/each}}
+</nav>

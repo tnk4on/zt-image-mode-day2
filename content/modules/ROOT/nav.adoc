@@ -1,0 +1,4 @@
+* xref:01-switch-registries.adoc[レジストリの切り替え]
+* xref:02-switch-an-image.adoc[イメージの切り替え]
+* xref:03-rollback-a-host.adoc[ホストのロールバック]
+* xref:04-move-httpd-in-image.adoc[httpd のイメージ内移行]
