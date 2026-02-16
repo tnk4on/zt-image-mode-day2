@@ -1,3 +1,5 @@
+= レジストリの切り替え
+
 Red Hat Enterprise Linux のラボ体験へようこそ。
 
 https://www.redhat.com/en/introduction-to-image-mode-for-red-hat-enterprise-linux-interactive-lab[前回の image mode ラボ,window=_blank]では、bootc イメージから仮想マシンを作成しました。インフラストラクチャやロールの変更に適応することは、bootc ホストの動作の核心です。ここでは、`+bootc+` がイメージを追跡する方法、ホストの用途を変更する方法、変更をロールバックする方法について探索します。
