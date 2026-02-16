@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled :: RHEL Image Mode Day 2 運用</title>
+    <link rel="canonical" href="https://github.com/rhpds/showroom_template_zero/modules/02-switch-an-image.html">
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://unpkg.com/clipboard@2/dist/clipboard.min.js"></script>
+  </head>
+  <body class="article">
+<header class="header" role="banner">
+
+</header>
+<div class="main-wrapper">
+
+  <main class="main">
+<div class="toolbar" role="navigation">
+</div><article class="doc">
+<div class="sect1">
+<h2 id="_タグについて"><a class="anchor" href="#_タグについて"></a>タグについて</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>この演習では <code>Builder</code> タブに戻ってください。</p>
+</div>
+<div class="paragraph">
+<p>おさらいとして、コンテナイメージの命名規則は <code>registry/name:tag</code> です。このホスト上にある異なるイメージを確認してみましょう。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">podman images</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>前の演習では、RHEL 10 バージョンの新しいイメージをビルドする際に <code>el10</code> タグを使用しました。他のイメージでも TAG 列にバージョン情報が表示されています。ただし、他のラボでは明示的なタグを設定しなかったため、<code>podman</code> はデフォルトの <code>latest</code> タグを使用します。これは便利ですが、多くの混乱を招くことがあります。その <code>latest</code> コンテナには何が入っているのでしょうか？どの更新を提供したのでしょうか？これまでの <code>bootc status</code> の出力で <code>latest</code> タグを見たことがありますか？</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_タグを使用したイメージ内容の識別"><a class="anchor" href="#_タグを使用したイメージ内容の識別"></a>タグを使用したイメージ内容の識別</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>アプリケーションのデプロイに備えて、Web サーバーに新しいコンテンツを追加し、新しいタグでビルドしましょう。</p>
+</div>
+<div class="paragraph">
+<p>vim を使ってファイルの末尾に以下の行を追加してください：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">vim Containerfile</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-dockerfile hljs" data-lang="dockerfile">RUN echo "New application coming soon!" &gt; /var/www/html/index.html</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_podman_を使用したイメージのビルド"><a class="anchor" href="#_podman_を使用したイメージのビルド"></a>podman を使用したイメージのビルド</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Containerfile の変更を保存したら、<code>podman build</code> を実行して新しいイメージを取得します。今回は、コンテナ名の末尾に <code>v2</code> を追加して特定のタグを設定します。コンテナツールは再び既存のレイヤーを再利用し、新しい Web ページ用に1つだけレイヤーを追加します。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">podman build -t registry-{guid}.{domain}/test-bootc:v2 .</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_複数のタグ付きバージョンのレジストリへのプッシュ"><a class="anchor" href="#_複数のタグ付きバージョンのレジストリへのプッシュ"></a>複数のタグ付きバージョンのレジストリへのプッシュ</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>タグは人に情報を伝えるものであり、コンテナツールに伝えるものではありません。ツールは操作を行う際にタグに関連付けられた ID を使用します。つまり、タグを使用してユーザーに異なる種類の情報を伝えることができます。</p>
+</div>
+<div class="paragraph">
+<p>例えば、このイメージが本番環境用ではなく開発環境用であることも知らせたいとしましょう。<code>podman image tag</code> サブコマンドで新しいイメージに <code>dev</code> タグを追加できます。このタグはローカルにのみ適用されるため、レジストリにもプッシュする必要があります。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">podman image tag registry-{guid}.{domain}/test-bootc:v2 registry-{guid}.{domain}/test-bootc:dev</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>作成したさまざまなイメージを確認しましょう。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">podman images test-bootc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>3つのイメージがリストされていますが、<code>IMAGE ID</code> 列をよく見ると、そのうち2つは同じであることがわかります。</p>
+</div>
+<div class="paragraph">
+<p>このラボ環境で利用可能なものよりも高度なツールを使えば、タグによる柔軟性は非常に強力なものになります。</p>
+</div>
+<div class="paragraph">
+<p>更新されたイメージを使用可能にするために、レジストリにプッシュする必要があります。<code>dev</code> タグのイメージは、他のすべてのレイヤーが <code>v2</code> イメージと同一であるため、設定レイヤーのみをコピーすることに注目してください。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">podman push registry-{guid}.{domain}/test-bootc:v2</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">podman push registry-{guid}.{domain}/test-bootc:dev</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_v2_イメージへの切り替え"><a class="anchor" href="#_v2_イメージへの切り替え"></a>v2 イメージへの切り替え</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>Image mode host</code> タブに切り替えて更新を適用します。</p>
+</div>
+<div class="paragraph">
+<p>レジストリにプッシュした新しいイメージは <code>el10</code> タグを使用していないため、<code>bootc</code> では更新として認識されません。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">bootc upgrade --check</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>タグはイメージ名の一部であるため、新しい <code>v2</code> イメージは <code>bootc</code> が追跡しているイメージとは異なるイメージです。最初の演習でリポジトリを変更した時と同様に、<code>bootc switch</code> を使用してインストールできます。同じイメージを参照する2つのタグがあるため、<code>v2</code> か <code>dev</code> のどちらでも新しいイメージをインストールできます。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">bootc switch registry-{guid}.{domain}/test-bootc:v2</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>最初の演習とは異なり、<code>bootc switch</code> は更新された1つのレイヤーのみをプルダウンします。</p>
+</div>
+<div class="paragraph">
+<p><code>bootc switch</code> を使用すると、起動したイメージとは異なるイメージが必要で、単純な更新ではないさまざまなシナリオを処理できます。Java JDK のようなコアアプリケーションコンポーネントのアップグレードテストを、アプリケーション用の新しいベースイメージを提供して行うことができます。あるいは、ホスト情報を維持したまま OS 全体をアップグレードテストすることもできます。これについては後ほど少し詳しく見ていきます。</p>
+</div>
+<div class="paragraph">
+<p>変更を適用するにはシステムの再起動が必要です。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">reboot</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vm_が_v2_イメージで動作していることの確認"><a class="anchor" href="#_vm_が_v2_イメージで動作していることの確認"></a>VM が v2 イメージで動作していることの確認</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>システムの再起動が完了したら、Refresh ボタンをクリックしてログインし直せます。</p>
+</div>
+<div class="paragraph">
+<p><code>bootc status</code> の <code>spec</code> セクションが更新先について何を表示しているか確認しましょう。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">bootc status | grep spec: -A 4</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>v2</code> タグが確認できました。では、新しいプレースホルダーの index ページはどうでしょうか？</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl localhost</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">ls -alh /var/www/html/index.html</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>新しい index は表示されず、ディスク上にもありません。はい、手順には意図的なエラーがあります。これは、bootc が変更中にディレクトリとイメージの内容をどのように扱うかに基づく予想される動作です。</p>
+</div>
+<div class="paragraph">
+<p>次の演習でこの問題を調査するため、VM にログインしたままにしてください。</p>
+</div>
+</div>
+</div>
+</article>
+  </main>
+</div>
+<footer role="contentinfo">
+  <div class="region region-rhd-footer">
+    <div id="block-rhdfooter" class="rhd-footer">
+      <nav class="rhd-footer-nav" aria-label="Secondary Navigation" role="navigation">
+  <ul class="rhd-menu">
+    
+  </ul>
+</nav>
+    </div>
+  </div>
+</footer>
+<script src="../_/js/site.js"></script>
+<script src="../_/js/vendor/highlight.js"></script>
+<script>hljs.initHighlighting()</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+  integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+  integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+  integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>

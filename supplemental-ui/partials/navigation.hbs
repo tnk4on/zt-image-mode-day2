@@ -4,9 +4,11 @@
         {{#each versions}}
         {{#each navigation}}
         {{#each items}}
+        {{#if url}}
         <li class="nav-item{{#if (eq url ../../../../page.url)}} is-current-page{{/if}}">
-            <a class="nav-link" href="{{{url}}}">{{content}}</a>
+            <a class="nav-link" href="{{{relativize ../../../../page.url url}}}">{{content}}</a>
         </li>
+        {{/if}}
         {{/each}}
         {{/each}}
         {{/each}}

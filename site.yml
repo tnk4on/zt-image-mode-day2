@@ -1,7 +1,7 @@
 ---
 site:
   title: "RHEL Image Mode Day 2 運用"
-  url: https://github.com/rhpds/showroom_template_zero
+  url: https://tnk4on.github.io/zt-image-mode-day2
   start_page: modules::01-switch-registries.adoc
 
 content:
