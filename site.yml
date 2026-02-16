@@ -1,6 +1,6 @@
 ---
 site:
-  title: "RHEL Image Mode Day 2 運用 | Red Hat Enterprise Linux Interactive Labs"
+  title: "RHEL Image Mode Day 2 運用 | Interactive labs for Red Hat Enterprise Linux"
   url: https://tnk4on.github.io/zt-image-mode-day2
   start_page: modules::01-switch-registries.adoc
 
