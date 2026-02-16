@@ -18,7 +18,7 @@ index.html
 
 == イメージとホストの状態
 
-ファイルはあるのに、なぜホスト上に表示されなかったのでしょうか？https://www.redhat.com/en/introduction-to-image-mode-for-red-hat-enterprise-linux-interactive-lab[image mode 入門ラボ,window=_blank]で、image mode における `+/etc+` の扱い方について説明しました。`+/var+` の階層も特別に扱われます。
+ファイルはあるのに、なぜホスト上に表示されなかったのでしょうか？ https://www.redhat.com/en/introduction-to-image-mode-for-red-hat-enterprise-linux-interactive-lab[image mode 入門ラボ,window=_blank] で、image mode における `+/etc+` の扱い方について説明しました。`+/var+` の階層も特別に扱われます。
 
 [cols=",,",options="header",]
 |===
