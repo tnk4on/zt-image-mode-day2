@@ -1,45 +1,31 @@
-== Rolling back changes
+== 変更のロールバック
 
-Image mode systems have a native capability that typically takes more
-preparation with package mode operations: the rollback.
+Image mode のシステムには、パッケージモード操作ではより多くの準備が必要となる機能がネイティブで備わっています：ロールバックです。
 
-Since `+bootc+` unpacks images locally, we still have the previous
-version of the host on disk. Our `+v2+` image was unpacked alongside the
-original image, then set as the primary target in the bootloader. To
-restore the previous version of a package mode system, we’d need to have
-set up snapshots before changes were made or refer to an external
-backup. With `+bootc+` we have a single command that can revert to the
-last booted image.
+`+bootc+` はイメージをローカルに展開するため、ホストの以前のバージョンがディスク上にまだ残っています。`+v2+` イメージは元のイメージの横に展開され、ブートローダーのプライマリターゲットとして設定されました。パッケージモードのシステムで以前のバージョンを復元するには、変更前にスナップショットを設定するか、外部バックアップを参照する必要があります。`+bootc+` では、最後に起動したイメージに戻す単一のコマンドがあります。
 
-A missing web page isn’t the sort of issue we’d normally need to recover
-from a backup, but this is a lab after all. Let’s go ahead and check for
-an available rollback option to get us back to the previous image.
+Web ページが見つからないというのは、通常バックアップから復元が必要な問題ではありませんが、これはラボですので。ロールバックオプションが利用可能かどうか確認して、以前のイメージに戻しましょう。
 
 [source,bash,run]
 ----
 bootc status
 ----
 
-This bottom section of the status output shows the available image
-target. You should see our original image, without the `+v2+` tag. To
-trigger the rollback, we issue one command.
+ステータス出力の下部セクションに、利用可能なイメージターゲットが表示されます。`+v2+` タグなしの元のイメージが表示されるはずです。ロールバックをトリガーするには、1つのコマンドを実行します。
 
 [source,bash,run]
 ----
 bootc rollback
 ----
 
-Once the rollback is prepared and the bootloader updated, the command should return this:
+ロールバックが準備され、ブートローダーが更新されると、コマンドは次のように返すはずです：
 
 [source,nocopy]
 ----
 Next boot: rollback deployment
 ----
 
-There are two additional places in the status you can look for
-information about what will happen at the next boot. You should see the
-value of `+rollbackQueued+` has been updated. This can be useful to
-check before restarting a system.
+次回の起動で何が起こるかについて、ステータスの他の2つの箇所で確認できます。`+rollbackQueued+` の値が更新されているはずです。これはシステムの再起動前に確認するのに便利です。
 
 [source,bash,run]
 ----
@@ -51,10 +37,7 @@ bootc status | grep Queued
 rollbackQueued: true
 ----
 
-You can also check the boot order in the spec block to see what has been
-sent to the bootloader. This should match one of `+default+` or
-`+rollback+`. The `+default+` order will use the image from the `+spec+`
-section of the status.
+spec ブロックの起動順序を確認して、ブートローダーに送信された内容を確認することもできます。これは `+default+` または `+rollback+` のいずれかに一致するはずです。`+default+` の順序は、ステータスの `+spec+` セクションのイメージを使用します。
 
 [source,bash,run]
 ----
@@ -66,17 +49,13 @@ bootc status | grep Order
 bootOrder: rollback
 ----
 
-Feel free to explore `+bootc status+` further before moving on.
+先に進む前に、`+bootc status+` をさらに自由に確認してください。
 
-As usual, a reboot is needed to apply changes. After the reboot, the
-rollback image will become the booted image, and will also become the
-new default in the boot order.
+通常どおり、変更を適用するには再起動が必要です。再起動後、ロールバックイメージが起動イメージとなり、起動順序の新しいデフォルトにもなります。
 
 [source,bash,run]
 ----
 reboot
 ----
 
-While the system reboots and returns to the previous state, let’s dig
-into what happened in the Containerfile and explore why our index.html
-update didn’t go the way we expected.
+システムが再起動して以前の状態に戻っている間に、Containerfile で何が起こったのか、なぜ index.html の更新が期待どおりにいかなかったのかを詳しく調べてみましょう。

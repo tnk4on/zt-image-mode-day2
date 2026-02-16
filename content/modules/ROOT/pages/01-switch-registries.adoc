@@ -1,23 +1,18 @@
-Welcome to this lab experience for Red Hat Enterprise Linux.
+Red Hat Enterprise Linux のラボ体験へようこそ。
 
-In a
-https://www.redhat.com/en/introduction-to-image-mode-for-red-hat-enterprise-linux-interactive-lab[previous
-image mode lab,window=_blank], we created a virtual machine from a bootc image.
-Adapting to changes in infrastructure or role is core to how bootc hosts
-operate. We’ll explore how `+bootc+` tracks images, changes host
-purposes, and rolls back changes.
+https://www.redhat.com/en/introduction-to-image-mode-for-red-hat-enterprise-linux-interactive-lab[前回の image mode ラボ,window=_blank]では、bootc イメージから仮想マシンを作成しました。インフラストラクチャやロールの変更に適応することは、bootc ホストの動作の核心です。ここでは、`+bootc+` がイメージを追跡する方法、ホストの用途を変更する方法、変更をロールバックする方法について探索します。
 
-== Changing OS versions for our bootc image
+== bootc イメージの OS バージョンの変更
 
-In the normal course of operations, available infrastructure is often changed or decommissioned in favor of newer options. One of those newer options is a more recent version of RHEL. Typically, exploring the impact of a new version of RHEL on existing workloads means deploying a whole new set of servers and applications, migrating test data, and more. Finding available resources and time is challenging.
+通常の運用では、利用可能なインフラストラクチャが変更されたり、より新しいオプションのために廃止されたりすることがよくあります。そのような新しいオプションの1つが、より新しいバージョンの RHEL です。通常、新しいバージョンの RHEL が既存のワークロードに与える影響を調査するには、まったく新しいサーバーとアプリケーションのセットをデプロイし、テストデータを移行するなど、多くの作業が必要です。利用可能なリソースと時間を確保するのは困難です。
 
-Image mode can make testing these sorts of changes much easier, not only by simplifying the initial creation of an existing deployment on a newer OS, but also by repurposing existing machines with live data for testing. The image based nature also makes A/B testing and roll backs a snap.
+Image mode を使えば、このような変更のテストがはるかに簡単になります。新しい OS 上で既存のデプロイを最初に作成することを簡素化するだけでなく、ライブデータを持つ既存のマシンをテスト用に転用することもできます。イメージベースの性質により、A/B テストやロールバックも容易です。
 
-== Update the Containerfile to RHEL 10
+== Containerfile を RHEL 10 に更新
 
-Let's do something radical to explore changing the starting bootc image. In the previous lab, we were using RHEL 9. While we could just use a later minor version, let's see what happens if we use the RHEL 10 bootc base instead.
+開始時の bootc イメージを変更する手順を大胆に探ってみましょう。前回のラボでは RHEL 9 を使用していました。後のマイナーバージョンを使用することもできますが、RHEL 10 の bootc ベースを使用するとどうなるか見てみましょう。
 
-On the `Builder` tab, replace the FROM line with the RHEL 10 bootc base image from the catalog using vim.
+`Builder` タブで、vim を使って FROM 行をカタログの RHEL 10 bootc ベースイメージに置き換えます。
 
 [source,bash,run,subs=attributes+]
 ----
@@ -29,56 +24,50 @@ vim Containerfile
 FROM registry.redhat.io/rhel10/rhel-bootc:10.1
 ----
 
-=== Use podman to build the image
-With our changes in the Containerfile saved, we will run `podman build` to get a new image. This time we'll add the tag `el10` so we know which version we're using. We'll talk more about tags in a later exercise, but image names and tags are part of how `bootc` knows what image to track for updates.
+=== podman を使用したイメージのビルド
+Containerfile の変更を保存したら、`podman build` を実行して新しいイメージを取得します。今回は、使用しているバージョンがわかるように `el10` タグを追加します。タグについては後の演習で詳しく説明しますが、イメージ名とタグは `bootc` が更新を追跡するイメージを識別する方法の一部です。
 
 [source,bash,run,subs=attributes+]
 ----
 podman build -t registry-{guid}.{domain}/test-bootc:el10 .
 ----
 
-It's really that simple to build a new image based on a completely different version of RHEL.
+まったく異なるバージョンの RHEL に基づく新しいイメージをビルドするのは、本当にこれだけです。
 
-Keep in mind that we aren't upgrading in the same sense that `leapp` does. We've built a new thing from a new starting point. We need to account for any changes between RHEL 9 and RHEL 10 in the definitions and configurations. For example, if we'd been using the web console metrics, the functionality of the `cockpit-pcp` package from RHEL 9 was rolled into the RHEL 10 `cockpit-bridge` package.
+`leapp` のようなアップグレードをしているわけではないことに注意してください。新しい出発点から新しいものをビルドしています。定義や設定で RHEL 9 と RHEL 10 の間の変更を考慮する必要があります。例えば、Web コンソールのメトリクスを使用していた場合、RHEL 9 の `cockpit-pcp` パッケージの機能は RHEL 10 の `cockpit-bridge` パッケージに統合されました。
 
-This means we can catch changes like these at build time since `dnf` would have thrown an error trying to install the RHEL 9 package. This helps with the cycle of experimentation when building any new standardized image, not just for major versions.
+つまり、`dnf` が RHEL 9 のパッケージをインストールしようとしてエラーを出すため、このような変更はビルド時にキャッチできます。これは、メジャーバージョンだけでなく、新しい標準化イメージをビルドする際の検証サイクルに役立ちます。
 
-Once we push the new image to the registry, we can use it immediately on any available image mode host.
+新しいイメージをレジストリにプッシュすれば、利用可能な任意の image mode ホストですぐに使用できます。
 
 [source,bash,run,subs=attributes+]
 ----
 podman push registry-{guid}.{domain}/test-bootc:el10 
 ----
 
-== Connect to the VM running our bootc image
+== bootc イメージが動作する VM への接続
 
-Let’s connect to the virtual machine via SSH. Switch to the `Image mode host` tab.
+SSH で仮想マシンに接続しましょう。`Image mode host` タブに切り替えてください。
 
 [NOTE]
 ====
-If the SSH session hasn’t connected or there is an error,
-you can reconnect by clicking Refresh next to the tab name. The prompt
-will look like this.
+SSH セッションが接続されない場合やエラーが発生した場合は、タブ名の横にある Refresh をクリックして再接続できます。プロンプトは次のようになります。
 ====
 
-== Check the image the VM is using
+== VM が使用しているイメージの確認
 
-Hosts created from bootc images track a particular image in a specific
-registry. The spec section of bootc status provides the information about the
-image in use and where `+bootc+` is looking for it.
+bootc イメージから作成されたホストは、特定のレジストリ内の特定のイメージを追跡します。bootc status の spec セクションは、使用中のイメージと `+bootc+` が参照している場所に関する情報を提供します。
 
 [source,bash,run]
 ----
 bootc status | grep spec: -A 4
 ----
 
-In the output you can see the hostname (and port if needed) as well as
-the image name. You will also notice the `+transport+` line, which
-confirms that we are getting updates for this image from a registry.
+出力には、ホスト名（必要な場合はポートも）とイメージ名が表示されます。`+transport+` 行も表示され、このイメージの更新をレジストリから取得していることが確認できます。
 
-== Switch to a new image
+== 新しいイメージへの切り替え
 
-We can migrate this host to our new RHEL 10 image with `bootc switch`.
+`bootc switch` を使用して、このホストを新しい RHEL 10 イメージに移行できます。
 
 [source,bash,run,subs=attributes+]
 ----
@@ -86,54 +75,46 @@ bootc switch registry-{guid}.{domain}/test-bootc:el10
 ----
 [NOTE]
 ====
-If something went wrong with the push step, you may get an error about an unknown manifest. If so, return to the `Builder` tab and double check that the push to the lab registry was succesful.
+プッシュステップで何か問題が発生した場合、unknown manifest に関するエラーが表示されることがあります。その場合は `Builder` タブに戻り、ラボレジストリへのプッシュが成功したかどうかを確認してください。
 ====
 
-At first glance, `+bootc switch+` doesn’t look very different from
-`+bootc upgrade+`. It will download and prepare the new image to a local
-deployment location on disk. It downloads any layers it detects are
-different based on the metadata available in the registry.
+一見すると、`+bootc switch+` は `+bootc upgrade+` とあまり変わらないように見えます。新しいイメージをダウンロードし、ディスク上のローカルなデプロイ場所に準備します。レジストリで利用可能なメタデータに基づいて、異なると検出されたレイヤーをダウンロードします。
 
-Again, we aren't upgrading the host in the way that `leapp` does, rather we're deploying new system software alongside existing configuration and user data.
+繰り返しますが、`leapp` のようにホストをアップグレードしているのではなく、既存の設定とユーザーデータの横に新しいシステムソフトウェアをデプロイしています。
 
 [NOTE]
 ====
-You may see SELinux errors during the switch that refer to Non-ASCII characters in a binary policy, these are harmless and we're looking at fixes now. However, these are the types of things that may vary when doing major version testing like we are in this lab.
+切り替え中に、バイナリポリシーの Non-ASCII 文字に関する SELinux エラーが表示されることがあります。これらは無害で、現在修正に取り組んでいます。ただし、このラボのようなメジャーバージョンのテスト時に異なる可能性があるものの一例です。
 ====
 
-We can see in the output of `+bootc switch+` that our new image has been
-queued to be activated the next time the host boots. We can also see if
-there are any changes waiting by checking `+bootc status+`.
+`+bootc switch+` の出力で、新しいイメージがホストの次回起動時にアクティブ化されるようキューに入れられたことがわかります。`+bootc status+` で変更が待機しているか確認することもできます。
 
 [source,bash,run]
 ----
 bootc status
 ----
 
-If we needed to wait for a maintenance window we could stage the
-changes, then schedule the reboot. Let’s restart the system now to get
-our changes.
+メンテナンスウィンドウを待つ必要がある場合は、変更をステージングしてから再起動をスケジュールできます。今すぐシステムを再起動して変更を適用しましょう。
 
 [source,bash,run]
 ----
 reboot
 ----
 
-Once the system has completed rebooting, you can log back in by clicking
-the refresh button.
+システムの再起動が完了したら、Refresh ボタンをクリックしてログインし直せます。
 
-You will be greeted with a new default MOTD, and notice your original user and password still work. Local changes to the VM persist even though we've completely changed the system software to RHEL 10. You can check the `redhat-release` file to confirm the VM is running RHEL 10. Feel free to explore in other ways to confirm this is really RHEL 10.
+新しいデフォルトの MOTD が表示され、元のユーザーとパスワードがまだ使えることに気づくでしょう。システムソフトウェアを RHEL 10 に完全に変更しても、VM へのローカルの変更は保持されます。`redhat-release` ファイルを確認して、VM が RHEL 10 で動作していることを確認できます。本当に RHEL 10 であることを他の方法でも自由に確認してください。
 
 [source,bash,run]
 ----
 cat /etc/redhat-release
 ----
 
-You will also see the previous RHEL 9 image is still on disk as a roll back option. We'll discuss this in more detail in a later exercise, but this means if we run into any issues during testing we can quickly switch back to the previous RHEL 9 deployment to check behavior, missing packages, or other troubleshooting.  This makes for a simple A/B process to understand new major or minor releases in your own environments and applications.
+以前の RHEL 9 イメージがロールバックオプションとしてディスク上にまだ残っていることもわかります。これについては後の演習で詳しく説明しますが、テスト中に何か問題が発生した場合、以前の RHEL 9 デプロイにすぐに切り替えて動作の確認、不足パッケージの確認、その他のトラブルシューティングを行えることを意味します。これにより、独自の環境やアプリケーションで新しいメジャーリリースやマイナーリリースを理解するためのシンプルな A/B プロセスが可能になります。
 
 [source,bash,run]
 ----
 bootc status
 ----
 
-Once a host it running, changing the image in use is very straightforward, and can be useful for a number of reasons beyond radical changes like major versions. We'll stick with RHEL 10 from here, but let's explore a little more of what `bootc switch` can do for us in the next few exercises.
+ホストが実行中になれば、使用するイメージの変更は非常に簡単で、メジャーバージョンのような大きな変更以外にもさまざまな理由で有用です。ここからは RHEL 10 を使い続けますが、次のいくつかの演習で `bootc switch` でできることをさらに探っていきましょう。

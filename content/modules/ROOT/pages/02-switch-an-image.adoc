@@ -1,21 +1,20 @@
-== A word about tags
-Return to the `Builder` tab for this exercise.
+== タグについて
+この演習では `Builder` タブに戻ってください。
 
-As a review, the naming convention for container images is `registry/name:tag`. Let's examine the different images that are currently on this host.
+おさらいとして、コンテナイメージの命名規則は `registry/name:tag` です。このホスト上にある異なるイメージを確認してみましょう。
 
 [source,bash,run]
 ----
 podman images
 ----
 
-In the previous exercise, we used the `el10` tag when building the new RHEL 10 version of the image. You'll also see other images have version information in the TAG column. However, in other labs we didn't set an explicit tag, which means `podman` will use the default `latest` tag. While this is convenient, it can create a lot of confusion. What is in that `latest` container? Which updates did we provide? Have you seen the `latest` tag in any of the `bootc status` output so far?
+前の演習では、RHEL 10 バージョンの新しいイメージをビルドする際に `el10` タグを使用しました。他のイメージでも TAG 列にバージョン情報が表示されています。ただし、他のラボでは明示的なタグを設定しなかったため、`podman` はデフォルトの `latest` タグを使用します。これは便利ですが、多くの混乱を招くことがあります。その `latest` コンテナには何が入っているのでしょうか？どの更新を提供したのでしょうか？これまでの `bootc status` の出力で `latest` タグを見たことがありますか？
 
-== Using tags for identifying image contents
+== タグを使用したイメージ内容の識別
 
-Let’s add some new content to our webserver in preparation for deploying
-an application, then build it with a new tag.
+アプリケーションのデプロイに備えて、Web サーバーに新しいコンテンツを追加し、新しいタグでビルドしましょう。
 
-Add the following line at the end of the filei using vim:
+vim を使ってファイルの末尾に以下の行を追加してください：
 
 [source,bash,run]
 ----
@@ -28,53 +27,38 @@ RUN echo "New application coming soon!" > /var/www/html/index.html
 ----
 
 
-== Use podman to build the image
+== podman を使用したイメージのビルド
 
-With our changes in the Containerfile saved, we will run
-`+podman build+` to get a new image. But this time we’ll set a specific
-tag by adding `+v2+` to the end of the container name. The container
-tools once again reuse the pre-existing layers, only adding one for our
-new web page.
+Containerfile の変更を保存したら、`+podman build+` を実行して新しいイメージを取得します。今回は、コンテナ名の末尾に `+v2+` を追加して特定のタグを設定します。コンテナツールは再び既存のレイヤーを再利用し、新しい Web ページ用に1つだけレイヤーを追加します。
 
 [source,bash,run,subs=attributes+]
 ----
 podman build -t registry-{guid}.{domain}/test-bootc:v2 .
 ----
 
-== Push multiple tagged versions to the registry
+== 複数のタグ付きバージョンのレジストリへのプッシュ
 
-Tags communicate information to people, not the container tools. The
-tools will use the IDs associated to tag when doing operations. This
-means we can use tags to carry different kinds of information for users.
+タグは人に情報を伝えるものであり、コンテナツールに伝えるものではありません。ツールは操作を行う際にタグに関連付けられた ID を使用します。つまり、タグを使用してユーザーに異なる種類の情報を伝えることができます。
 
-Let’s say we also wanted to let people know this image was for the
-development environment and not for production use. We could add a
-`+dev+` tag to our new image with the `+podman image tag+` subcommand.
-This tag is only applied locally, so we need push that to the registry
-as well.
+例えば、このイメージが本番環境用ではなく開発環境用であることも知らせたいとしましょう。`+podman image tag+` サブコマンドで新しいイメージに `+dev+` タグを追加できます。このタグはローカルにのみ適用されるため、レジストリにもプッシュする必要があります。
 
 [source,bash,run,subs=attributes+]
 ----
 podman image tag registry-{guid}.{domain}/test-bootc:v2 registry-{guid}.{domain}/test-bootc:dev
 ----
 
-Look at the different images we’ve created.
+作成したさまざまなイメージを確認しましょう。
 
 [source,bash,run]
 ----
 podman images test-bootc
 ----
 
-You can see we have 3 images listed, but a closer look at the
-`+IMAGE ID+` column shows that 2 of them are the same.
+3つのイメージがリストされていますが、`+IMAGE ID+` 列をよく見ると、そのうち2つは同じであることがわかります。
 
-With more sophisticated tools than available in this lab environment,
-the flexibility afforded by tags can be very powerful.
+このラボ環境で利用可能なものよりも高度なツールを使えば、タグによる柔軟性は非常に強力なものになります。
 
-We need to push our updated images to the registry to make them
-available for use. Notice that the `+dev+` tagged image only copies a
-config layer since all of the other layers are identical to the `+v2+`
-image.
+更新されたイメージを使用可能にするために、レジストリにプッシュする必要があります。`+dev+` タグのイメージは、他のすべてのレイヤーが `+v2+` イメージと同一であるため、設定レイヤーのみをコピーすることに注目してください。
 
 [source,bash,run,subs=attributes+]
 ----
@@ -86,60 +70,47 @@ podman push registry-{guid}.{domain}/test-bootc:v2
 podman push registry-{guid}.{domain}/test-bootc:dev
 ----
 
-== Switch to the v2 image
+== v2 イメージへの切り替え
 
-Switch to the `Image mode host` tab to apply the update.
+`Image mode host` タブに切り替えて更新を適用します。
 
-The new images we pushed to the registry didn’t use the `+el10+` tag,
-so they won’t be seen as an update by `+bootc+`. 
+レジストリにプッシュした新しいイメージは `+el10+` タグを使用していないため、`+bootc+` では更新として認識されません。
 
 [source,bash,run]
 ----
 bootc upgrade --check
 ----
 
-Since tags are part of the image name, our new `+v2+` image is a
-different image than what `+bootc+` is tracking. We can use
-`+bootc switch+` to install it like we did in the first exercise to
-change repositories. And since there are two tags that refer to the same
-image, you could use either `+v2+` or `+dev+` to install the new image.
+タグはイメージ名の一部であるため、新しい `+v2+` イメージは `+bootc+` が追跡しているイメージとは異なるイメージです。最初の演習でリポジトリを変更した時と同様に、`+bootc switch+` を使用してインストールできます。同じイメージを参照する2つのタグがあるため、`+v2+` か `+dev+` のどちらでも新しいイメージをインストールできます。
 
 [source,bash,run,subs=attributes+]
 ----
 bootc switch registry-{guid}.{domain}/test-bootc:v2
 ----
 
-Unlike the first exercise, `+bootc switch+` only pulls down the one
-updated layer.
+最初の演習とは異なり、`+bootc switch+` は更新された1つのレイヤーのみをプルダウンします。
 
-Using `+bootc switch+` we can handle a variety of different scenarios
-that would require a different image than the one we booted that isn’t a
-simple update. We could test the upgrade of a core application component
-like a Java JDK by providing a new base image for the application. Or
-test a whole OS upgrade, all while keeping our host information the
-same. We’ll explore that a little later on.
+`+bootc switch+` を使用すると、起動したイメージとは異なるイメージが必要で、単純な更新ではないさまざまなシナリオを処理できます。Java JDK のようなコアアプリケーションコンポーネントのアップグレードテストを、アプリケーション用の新しいベースイメージを提供して行うことができます。あるいは、ホスト情報を維持したまま OS 全体をアップグレードテストすることもできます。これについては後ほど少し詳しく見ていきます。
 
-We need to restart the system to apply our changes.
+変更を適用するにはシステムの再起動が必要です。
 
 [source,bash,run]
 ----
 reboot
 ----
 
-== Check the VM is running the v2 image
+== VM が v2 イメージで動作していることの確認
 
-Once the system has completed rebooting, you can log back in by clicking
-the refresh button.
+システムの再起動が完了したら、Refresh ボタンをクリックしてログインし直せます。
 
-Let’s check what the `+spec+` section of `+bootc status+` now says about
-where we’re looking for updates.
+`+bootc status+` の `+spec+` セクションが更新先について何を表示しているか確認しましょう。
 
 [source,bash,run]
 ----
 bootc status | grep spec: -A 4
 ----
 
-There’s the `+v2+` tag, so what about our new placeholder index page?
+`+v2+` タグが確認できました。では、新しいプレースホルダーの index ページはどうでしょうか？
 
 [source,bash,run]
 ----
@@ -151,8 +122,6 @@ curl localhost
 ls -alh /var/www/html/index.html
 ----
 
-The new index doesn’t appear, and it’s also not on disk. Yes, there’s a
-deliberate error in the instructions. This is expected based on how
-bootc handles directories and image contents during changes.
+新しい index は表示されず、ディスク上にもありません。はい、手順には意図的なエラーがあります。これは、bootc が変更中にディレクトリとイメージの内容をどのように扱うかに基づく予想される動作です。
 
-Stay logged into the VM to explore this in the next exercise.
+次の演習でこの問題を調査するため、VM にログインしたままにしてください。

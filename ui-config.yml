@@ -4,16 +4,16 @@ antora:
   dir: www
   modules:
     - name: "01-switch-registries"
-      label: "Switch Registries"
+      label: "レジストリの切り替え"
       solveButton: true
     - name: "02-switch-an-image"
-      label: "Switch An Image"
+      label: "イメージの切り替え"
       solveButton: true
     - name: "03-rollback-a-host"
-      label: "Rollback A Host"
+      label: "ホストのロールバック"
       solveButton: true
     - name: "04-move-httpd-in-image"
-      label: "Move Httpd In Image"
+      label: "httpd のイメージ内移行"
       solveButton: true
 
 tabs:
