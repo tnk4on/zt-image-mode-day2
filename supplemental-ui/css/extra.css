@@ -4,14 +4,17 @@
   background: #f5f5f5;
   border-right: 1px solid #ddd;
 }
+
 .nav-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .nav-item {
   margin: 0.25rem 0;
 }
+
 .nav-link {
   display: block;
   padding: 0.5rem 0.75rem;
@@ -21,10 +24,12 @@
   font-size: 0.9rem;
   transition: background-color 0.2s;
 }
+
 .nav-link:hover {
   background: #e0e0e0;
 }
-.is-current-page > .nav-link {
+
+.is-current-page>.nav-link {
   background: #cc0000;
   color: white;
   font-weight: 600;
@@ -35,10 +40,12 @@
   display: flex;
   min-height: calc(100vh - 60px);
 }
+
 .main {
   flex: 1;
   padding: 1.5rem 2rem;
   max-width: 900px;
+  min-width: 0;
 }
 
 /* Pagination */
@@ -47,11 +54,13 @@
   padding-top: 1.5rem;
   border-top: 1px solid #ddd;
 }
+
 .page-nav-inner {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
 }
+
 .page-nav-btn {
   display: flex;
   flex-direction: column;
@@ -62,30 +71,96 @@
   transition: all 0.2s;
   min-width: 140px;
 }
+
 .page-nav-btn:hover {
   background: #cc0000;
   color: white;
 }
+
 .page-nav-btn:hover .page-nav-label,
 .page-nav-btn:hover .page-nav-title {
   color: white;
 }
+
 .page-nav-btn.prev {
   align-items: flex-start;
 }
+
 .page-nav-btn.next {
   align-items: flex-end;
   margin-left: auto;
 }
+
 .page-nav-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   color: #666;
   letter-spacing: 0.05em;
 }
+
 .page-nav-title {
   font-size: 0.95rem;
   font-weight: 600;
   color: #cc0000;
   margin-top: 0.15rem;
+}
+
+/* Mobile responsive */
+@media screen and (max-width: 768px) {
+  .main-wrapper {
+    flex-direction: column;
+  }
+
+  .nav {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding: 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-list {
+    display: flex;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+
+  .nav-item {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .main {
+    max-width: 100%;
+    padding: 1rem;
+  }
+
+  .doc {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .doc pre {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .page-nav-inner {
+    flex-direction: column;
+  }
+
+  .page-nav-btn {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .page-nav-btn.next {
+    margin-left: 0;
+    align-items: flex-end;
+  }
 }
